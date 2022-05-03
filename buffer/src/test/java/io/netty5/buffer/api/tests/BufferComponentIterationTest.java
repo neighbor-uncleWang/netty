@@ -32,6 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -75,8 +76,8 @@ public class BufferComponentIterationTest extends BufferTestSupport {
             try (Buffer a = allocator.allocate(8);
                  Buffer b = allocator.allocate(8);
                  Buffer c = allocator.allocate(8);
-                 Buffer x = CompositeBuffer.compose(allocator, b.send(), c.send())) {
-                buf = CompositeBuffer.compose(allocator, a.send(), x.send());
+                 Buffer x = allocator.compose(asList(b.send(), c.send()))) {
+                buf = allocator.compose(asList(a.send(), x.send()));
             }
             assertThat(buf.countComponents()).isEqualTo(3);
             assertThat(buf.countReadableComponents()).isZero();
@@ -124,9 +125,9 @@ public class BufferComponentIterationTest extends BufferTestSupport {
                 a.writeInt(1);
                 b.writeInt(2);
                 c.writeInt(3);
-                composite = CompositeBuffer.compose(allocator, a.send(), b.send(), c.send());
+                composite = allocator.compose(asList(a.send(), b.send(), c.send()));
             }
-            var list = new LinkedList<Integer>(List.of(1, 2, 3));
+            var list = new LinkedList<>(List.of(1, 2, 3));
             int count = composite.forEachReadable(0, (index, component) -> {
                 var buffer = component.readableBuffer();
                 int bufferValue = buffer.getInt();
@@ -171,7 +172,7 @@ public class BufferComponentIterationTest extends BufferTestSupport {
                 a.writeInt(1);
                 b.writeInt(2);
                 c.writeInt(3);
-                composite = CompositeBuffer.compose(allocator, a.send(), b.send(), c.send());
+                composite = allocator.compose(asList(a.send(), b.send(), c.send()));
             }
             int readPos = composite.readerOffset();
             int writePos = composite.writerOffset();
@@ -209,7 +210,7 @@ public class BufferComponentIterationTest extends BufferTestSupport {
             try (Buffer a = allocator.allocate(4);
                  Buffer b = allocator.allocate(4);
                  Buffer c = allocator.allocate(4)) {
-                buf = CompositeBuffer.compose(allocator, a.send(), b.send(), c.send());
+                buf = allocator.compose(asList(a.send(), b.send(), c.send()));
             }
             int i = 1;
             while (buf.writableBytes() > 0) {
@@ -289,7 +290,7 @@ public class BufferComponentIterationTest extends BufferTestSupport {
             try (Buffer a = allocator.allocate(8);
                  Buffer b = allocator.allocate(8);
                  Buffer c = allocator.allocate(8)) {
-                buf = CompositeBuffer.compose(allocator, a.send(), b.send(), c.send());
+                buf = allocator.compose(asList(a.send(), b.send(), c.send()));
             }
             buf.forEachWritable(0, (index, component) -> {
                 component.writableBuffer().putLong(0x0102030405060708L + 0x1010101010101010L * index);

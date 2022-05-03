@@ -60,6 +60,7 @@ import static io.netty5.buffer.api.tests.Fixture.Properties.HEAP;
 import static io.netty5.buffer.api.tests.Fixture.Properties.POOLED;
 import static io.netty5.buffer.api.tests.Fixture.Properties.UNCLOSEABLE;
 import static java.nio.ByteOrder.BIG_ENDIAN;
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -264,7 +265,7 @@ public abstract class BufferTestSupport {
                             int half = size / 2;
                             try (Buffer firstHalf = a.allocate(half);
                                  Buffer secondHalf = b.allocate(size - half)) {
-                                return CompositeBuffer.compose(a, firstHalf.send(), secondHalf.send());
+                                return a.compose(asList(firstHalf.send(), secondHalf.send()));
                             }
                         }
 
@@ -298,7 +299,7 @@ public abstract class BufferTestSupport {
                     try (Buffer a = allocator.allocate(part);
                          Buffer b = allocator.allocate(part);
                          Buffer c = allocator.allocate(size - part * 2)) {
-                        return CompositeBuffer.compose(allocator, a.send(), b.send(), c.send());
+                        return allocator.compose(asList(a.send(), b.send(), c.send()));
                     }
                 }
 
@@ -359,7 +360,7 @@ public abstract class BufferTestSupport {
                         if (size < 2) {
                             return allocator.allocate(size);
                         }
-                        var buf = CompositeBuffer.compose(allocator);
+                        var buf = allocator.compose();
                         buf.ensureWritable(size);
                         return buf;
                     }
