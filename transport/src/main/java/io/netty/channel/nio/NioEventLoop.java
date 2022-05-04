@@ -512,6 +512,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                                 selectCnt - 1, selector);
                     }
                     selectCnt = 0;
+                    //解决异常情况下被唤醒，比如空轮训
                 } else if (unexpectedSelectorWakeup(selectCnt)) { // Unexpected wakeup (unusual case)
                     selectCnt = 0;
                 }
@@ -558,12 +559,15 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             }
             return true;
         }
+
         if (SELECTOR_AUTO_REBUILD_THRESHOLD > 0 &&
+                //空轮转次数大于重试阈值
                 selectCnt >= SELECTOR_AUTO_REBUILD_THRESHOLD) {
             // The selector returned prematurely many times in a row.
             // Rebuild the selector to work around the problem.
             logger.warn("Selector.select() returned prematurely {} times in a row; rebuilding Selector {}.",
                     selectCnt, selector);
+            //销毁老的selector，创建一个新的selector，并转移原有的所有事件到新的selector中
             rebuildSelector();
             return true;
         }
@@ -584,8 +588,10 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
     private void processSelectedKeys() {
         if (selectedKeys != null) {
+            //处理优化过的选择器的键，plus版本
             processSelectedKeysOptimized();
         } else {
+            //处理就绪的选择器，普通版本
             processSelectedKeysPlain(selector.selectedKeys());
         }
     }
@@ -722,7 +728,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             // Also check for readOps of 0 to workaround possible JDK bug which may otherwise lead
             // to a spin loop
             if ((readyOps & (SelectionKey.OP_READ | SelectionKey.OP_ACCEPT)) != 0 || readyOps == 0) {
-                unsafe.read();
+                unsafe.read();//IO读取
             }
         } catch (CancelledKeyException ignored) {
             unsafe.close(unsafe.voidPromise());

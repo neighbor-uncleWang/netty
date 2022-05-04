@@ -91,9 +91,11 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
                     exception = t;
                 }
 
+                //客户端连接的数量，感每个客户端都有独立的缓存
                 int size = readBuf.size();
                 for (int i = 0; i < size; i ++) {
                     readPending = false;
+                    //开始进行读取，这是一个责任链，可以自定义很多handler， 首先进入ServerBootstrapAcceptor.channelRead()
                     pipeline.fireChannelRead(readBuf.get(i));
                 }
                 readBuf.clear();
