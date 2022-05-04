@@ -231,7 +231,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
      * Create a new {@link Channel} and bind it.
      */
     public ChannelFuture bind() {
-        validate();
+        validate(); //验证参数，比如group、channelFactory
         SocketAddress localAddress = this.localAddress;
         if (localAddress == null) {
             throw new IllegalStateException("localAddress not set");
@@ -269,7 +269,8 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     }
 
     private ChannelFuture doBind(final SocketAddress localAddress) {
-        final ChannelFuture regFuture = initAndRegister();
+        //ChannelFuture Future代表是异步操作
+        final ChannelFuture regFuture = initAndRegister(); //初始化和注册
         final Channel channel = regFuture.channel();
         if (regFuture.cause() != null) {
             return regFuture;
@@ -307,7 +308,9 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     final ChannelFuture initAndRegister() {
         Channel channel = null;
         try {
+            //创建一个具体的管道实现类
             channel = channelFactory.newChannel();
+            //为NioServerSocketCChannel添加Handler，其中一定包含一个处理Acceptor事件的handler
             init(channel);
         } catch (Throwable t) {
             if (channel != null) {
