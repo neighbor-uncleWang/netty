@@ -831,8 +831,10 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
     private void execute(Runnable task, boolean immediate) {
         boolean inEventLoop = inEventLoop();
+        //将任务添加到队列中，异步解耦，生产者消费者模型
         addTask(task);
         if (!inEventLoop) {
+            //线程启动
             startThread();
             if (isShutdown()) {
                 boolean reject = false;

@@ -437,10 +437,12 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     @Override
     protected void run() {
         int selectCnt = 0;
+        //监听就绪的连接
         for (;;) {
             try {
                 int strategy;
                 try {
+                    //计算什么策略
                     strategy = selectStrategy.calculateStrategy(selectNowSupplier, hasTasks());
                     switch (strategy) {
                     case SelectStrategy.CONTINUE:
@@ -500,6 +502,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                         ranTasks = runAllTasks(ioTime * (100 - ioRatio) / ioRatio);
                     }
                 } else {
+                    //当前队列中存在待执行的任务，并且没有就绪的channel
                     ranTasks = runAllTasks(0); // This will run the minimum number of tasks
                 }
 
